@@ -132,7 +132,7 @@ $(GZ)/$(SYSLINUX_GZ):
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
 MM_MIRROR = http://mirror.mephi.ru/debian/
-MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
+MM_OPTS  += --setup-hook='git checkout cache/.gitignore "$$1"/.gitignore'
 # .deb cache
 MM_OPTS  += --skip=update
 MM_OPTS  += --skip=essential/unlink --skip=cleanup/apt
