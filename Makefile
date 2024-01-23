@@ -1,5 +1,9 @@
 # var
 MODULE  = $(notdir $(CURDIR))
+NOW     = $(shell date +%d%m%y)
+REL     = $(shell git rev-parse --short=4 HEAD)
+BRANCH  = $(shell git rev-parse --abbrev-ref HEAD)
+CORES  ?= $(shell grep processor /proc/cpuinfo | wc -l)
 
 # version
 D_VER       = 2.106.1
@@ -87,12 +91,13 @@ $(GZ)/$(BUSYBOX_GZ):
 .PHONY: bb bbconfig
 bbconfig:
 	rm -f $(REF)/$(BUSYBOX)/.config
-	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT)/bb allnoconfig ;\
+	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT) allnoconfig ;\
 	make menuconfig
 bb: $(ROOT)/bin/busybox
 
 $(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/.config
-	cd $(REF)/$(BUSYBOX) ; make menuconfig
+	cd $(REF)/$(BUSYBOX) ; make menuconfig ;\
+	make -j$(CORES) && make install
 
 $(REF)/$(BUSYBOX)/.config: $(REF)/$(BUSYBOX)/README.md
 	git checkout $@
