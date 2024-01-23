@@ -2,7 +2,8 @@
 MODULE  = $(notdir $(CURDIR))
 
 # version
-D_VER = 2.106.1
+D_VER      = 2.106.1
+KERNEL_VER = $(shell uname -r)
 
 # dir
 CWD  = $(CURDIR)
@@ -28,6 +29,11 @@ all: $(ROOT)/sbin/init
 	sudo chroot $(ROOT) init
 $(ROOT)/sbin/init: $(D)
 	$(BLD) && chmod +x $@
+
+.PHONY: fw
+fw: $(ROOT)/boot/vmlinuz-$(KERNEL_VER)
+$(ROOT)/boot/vmlinuz-$(KERNEL_VER): /boot/vmlinuz-$(KERNEL_VER)
+	cp $< $@
 
 # format
 format: tmp/format_d
