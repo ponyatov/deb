@@ -55,9 +55,15 @@ fw: \
 
 $(ROOT)/boot/%-$(KERNEL_VER): /boot/%-$(KERNEL_VER)
 	cp $< $@
-$(ROOT)/lib/modules/$(KERNEL_VER)/modules.dep: /lib/modules/$(KERNEL_VER)/modules.dep
-	mkdir -p $(ROOT)/lib/modules
-	cp -r /lib/modules/$(KERNEL_VER) $(ROOT)/lib/modules/
+
+.PHONY: modules
+MODULES = lib/modules/$(KERNEL_VER)
+modules: $(ROOT)/$(MODULES)/modules.dep
+$(ROOT)/$(MODULES)/modules.dep: /$(MODULES)/modules.dep
+	mkdir -p $(ROOT)/lib/modules ; mkdir -p $(ROOT)/$(MODULES)
+	cp    /$(MODULES)/modules* $(ROOT)/$(MODULES)/
+	cp -r /$(MODULES)/kernel   $(ROOT)/$(MODULES)/
+	cp -r /$(MODULES)/misc     $(ROOT)/$(MODULES)/
 	touch $@
 
 # format
