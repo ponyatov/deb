@@ -27,6 +27,7 @@ DC   = /usr/bin/dmd
 DUB  = /usr/bin/dub
 RUN  = $(DUB) run   --compiler=$(DC)
 BLD  = $(DUB) build --compiler=$(DC)
+DPKG = dpkg --install --root $(ROOT)
 
 # src
 D += $(wildcard src/*.d*)
@@ -123,10 +124,14 @@ bbconfig:
 .PHONY: syslinux
 syslinux: $(REF)/$(SYSLINUX)/README.md
 	rm -rf $(TMP)/syslinux ; mkdir -p $(TMP)/syslinux
-	cd $(REF)/$(SYSLINUX) ; make O=$(TMP)/syslinux -j$(CORES) bios
+	cd $(REF)/$(SYSLINUX) ; LD='ld --no-warn-rwx-segments' make V=1 O=$(TMP)/syslinux -j$(CORES) bios
 
 $(GZ)/$(SYSLINUX_GZ):
 	$(CURL) $@ https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/$(SYSLINUX_V)/$(SYSLINUX_GZ)
+
+.PHONY: mmdeb
+mmdeb:
+	sudo mmdebstrap --variant=custom --include=busybox-static stable $(ROOT)/mmdeb /etc/apt/sources.list
 
 # merge
 
