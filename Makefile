@@ -27,6 +27,7 @@ DC   = /usr/bin/dmd
 DUB  = /usr/bin/dub
 RUN  = $(DUB) run   --compiler=$(DC)
 BLD  = $(DUB) build --compiler=$(DC)
+DPKG = dpkg --install --root $(ROOT)
 
 # src
 D += $(wildcard src/*.d*)
@@ -123,10 +124,22 @@ bbconfig:
 .PHONY: syslinux
 syslinux: $(REF)/$(SYSLINUX)/README.md
 	rm -rf $(TMP)/syslinux ; mkdir -p $(TMP)/syslinux
-	cd $(REF)/$(SYSLINUX) ; make O=$(TMP)/syslinux -j$(CORES) bios
+	cd $(REF)/$(SYSLINUX) ; LD='ld --no-warn-rwx-segments' make V=1 O=$(TMP)/syslinux -j$(CORES) bios
 
 $(GZ)/$(SYSLINUX_GZ):
 	$(CURL) $@ https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/$(SYSLINUX_V)/$(SYSLINUX_GZ)
+
+MM_SUITE  = bookworm
+MM_TARGET = $(ROOT)/mmdeb
+MM_MIRROR = http://mirror.mephi.ru/debian/
+MM_OPTS  += --variant=extract
+MM_PACKS += base-files
+MM_OPTS  += --include=$(MM_PACKS)
+.PHONY: mmdeb
+mmdeb:
+	sudo rm -rf $(ROOT)/$@
+	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT)/$@ $(MM_MIRROR)
+# sudo mmdebstrap --variant=custom --include=busybox-static stable $(ROOT)/mmdeb /etc/apt/sources.list
 
 # merge
 
