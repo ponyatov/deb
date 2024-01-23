@@ -48,11 +48,10 @@ $(ROOT)/sbin/init: $(D) dub.json Makefile
 	$(BLD) :init && chmod +x $@
 
 .PHONY: fw
-fw: \
-	$(ROOT)/boot/vmlinuz-$(KERNEL_VER) $(ROOT)/boot/config-$(KERNEL_VER) \
-	$(ROOT)/lib/modules/$(KERNEL_VER)/modules.dep \
-	$(ROOT)/bin/busybox
+fw: kernel modules $(ROOT)/bin/busybox
 
+.PHONY: kernel
+kernel: $(ROOT)/boot/vmlinuz-$(KERNEL_VER) $(ROOT)/boot/config-$(KERNEL_VER)
 $(ROOT)/boot/%-$(KERNEL_VER): /boot/%-$(KERNEL_VER)
 	cp $< $@
 
