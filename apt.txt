@@ -1,3 +1,4 @@
 git make curl
 code meld doxygen clang-format
 g++ build-essential
+libncurses-dev

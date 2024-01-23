@@ -2,8 +2,9 @@
 MODULE  = $(notdir $(CURDIR))
 
 # version
-D_VER      = 2.106.1
-KERNEL_VER = $(shell uname -r)
+D_VER       = 2.106.1
+KERNEL_VER  = $(shell uname -r)
+BUSYBOX_VER = 1.36.1
 
 # dir
 CWD  = $(CURDIR)
@@ -11,6 +12,7 @@ BIN  = $(CWD)/bin
 SRC  = $(CWD)/src
 TMP  = $(CWD)/tmp
 GZ   = $(HOME)/gz
+REF  = $(CWD)/ref
 ROOT = $(CWD)/root
 
 # tool
@@ -23,6 +25,10 @@ BLD  = $(DUB) build --compiler=$(DC)
 # src
 D += $(wildcard src/*.d*)
 
+# package
+BUSYBOX    = busybox-$(BUSYBOX_VER)
+BUSYBOX_GZ = $(BUSYBOX).tar.bz2
+
 # all
 .PHONY: all
 all: $(ROOT)/sbin/init
@@ -31,7 +37,10 @@ $(ROOT)/sbin/init: $(D) dub.json
 	$(BLD) && chmod +x $@
 
 .PHONY: fw
-fw: $(ROOT)/boot/vmlinuz-$(KERNEL_VER)
+fw: \
+	$(ROOT)/boot/vmlinuz-$(KERNEL_VER) \
+	$(ROOT)/bin/busybox
+
 $(ROOT)/boot/vmlinuz-$(KERNEL_VER): /boot/vmlinuz-$(KERNEL_VER)
 	cp $< $@
 
@@ -43,6 +52,9 @@ tmp/format_d: $(D)
 # rule
 bin/$(MODULE): $(D) Makefile
 	$(BLD)
+
+$(REF)/%/README.md: $(GZ)/%.tar.bz2
+	cd $(REF) ; bzcat $< | tar x && touch $@
 
 # doc
 .PHONY: doc
@@ -61,12 +73,23 @@ install: doc gz
 update:
 	sudo apt update
 	sudo apt install -yu `cat apt.txt`
-gz: $(DC) $(DUB)
+gz: $(DC) $(DUB) \
+	$(GZ)/$(BUSYBOX_GZ)
 
 $(DC) $(DUB): $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb
 	sudo dpkg -i $< && sudo touch $(DC) $(DUB)
 $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb:
 	$(CURL) $@ https://downloads.dlang.org/releases/2.x/$(D_VER)/dmd_$(D_VER)-0_amd64.deb
+
+$(GZ)/$(BUSYBOX_GZ):
+	$(CURL) $@ https://busybox.net/downloads/busybox-1.36.1.tar.bz2
+
+.PHONY: bb
+bb: $(ROOT)/bin/busybox
+$(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/README.md
+	rm -f $(REF)/$(BUSYBOX)/.config
+	cd $(REF)/$(BUSYBOX) ; make allnoconfig ;\
+	make menuconfig
 
 # merge
 
