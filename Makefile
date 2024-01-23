@@ -28,6 +28,7 @@ BLD  = $(DUB) build --compiler=$(DC)
 
 # src
 D += $(wildcard src/*.d*)
+D += $(wildcard init/src/*.d*)
 
 # package
 BUSYBOX    = busybox-$(BUSYBOX_VER)
@@ -36,9 +37,10 @@ BUSYBOX_GZ = $(BUSYBOX).tar.bz2
 # all
 .PHONY: all
 all: $(ROOT)/sbin/init
-	sudo chroot $(ROOT) init
-$(ROOT)/sbin/init: $(D) dub.json
-	$(BLD) && chmod +x $@
+	file $< ; echo ; ldd $<
+# sudo chroot $(ROOT) init
+$(ROOT)/sbin/init: $(D) dub.json Makefile
+	$(BLD) :init && chmod +x $@
 
 .PHONY: fw
 fw: \
@@ -89,18 +91,17 @@ $(GZ)/$(BUSYBOX_GZ):
 	$(CURL) $@ https://busybox.net/downloads/busybox-1.36.1.tar.bz2
 
 .PHONY: bb bbconfig
-bbconfig:
-	rm -f $(REF)/$(BUSYBOX)/.config
-	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT) allnoconfig ;\
-	make menuconfig
 bb: $(ROOT)/bin/busybox
-
 $(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/.config
 	cd $(REF)/$(BUSYBOX) ; make menuconfig ;\
 	make -j$(CORES) && make install
 
 $(REF)/$(BUSYBOX)/.config: $(REF)/$(BUSYBOX)/README.md
 	git checkout $@
+bbconfig:
+	rm -f $(REF)/$(BUSYBOX)/.config
+	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT) allnoconfig ;\
+	make menuconfig
 
 # merge
 

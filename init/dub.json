@@ -1,15 +1,13 @@
 {
-    "name":          "deb",
-    "description":   "корч Debian GNU/Linux",
+    "name":          "init",
+    "description":   "system init",
     "homepage":      "https://github.com/ponyatov/deb",
     "authors":      ["Dmitry Ponyatov <dponyatov@gmail.com>"],
     "copyright":     "Copyright © 2024, Dmitry Ponyatov <dponyatov@gmail.com>",
     "license":       "MIT",
     "targetType":    "executable",
-    "targetPath":    "root/sbin",
+    "targetPath":    "../root/sbin",
     "targetName":    "init",
-    "dflags-dmd":   ["=mcpu=native -L-static"],
-    "lflags-dmd":   ["-static"],
-    "subPackages":  ["init"],
+    "dflags-dmd":   ["-mcpu=native","-L-static"],
     "dependencies": {}
 }
