@@ -9,7 +9,8 @@ CORES  ?= $(shell grep processor /proc/cpuinfo | wc -l)
 D_VER        = 2.106.1
 KERNEL_VER   = $(shell uname -r)
 BUSYBOX_VER  = 1.36.1
-SYSLINUX_VER = 6.03
+SYSLINUX_V   = 6.04
+SYSLINUX_VER = $(SYSLINUX_V)-pre1
 
 # dir
 CWD  = $(CURDIR)
@@ -111,11 +112,11 @@ bbconfig:
 
 .PHONY: syslinux
 syslinux: $(REF)/$(SYSLINUX)/README.md
-	mkdir -p $(TMP)/syslinux
+	rm -rf $(TMP)/syslinux ; mkdir -p $(TMP)/syslinux
 	cd $(REF)/$(SYSLINUX) ; make O=$(TMP)/syslinux -j$(CORES) bios
 
 $(GZ)/$(SYSLINUX_GZ):
-	$(CURL) $@ https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/$(SYSLINUX_GZ)
+	$(CURL) $@ https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/$(SYSLINUX_V)/$(SYSLINUX_GZ)
 
 # merge
 
