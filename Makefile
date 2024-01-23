@@ -132,8 +132,10 @@ $(GZ)/$(SYSLINUX_GZ):
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
 MM_MIRROR = http://mirror.mephi.ru/debian/
-# MM_OPTS  += --hook-dir=$(CWD)/hook
 MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
+# .deb cache
+MM_OPTS  += --skip=update
+MM_OPTS  += --skip=essential/unlink --skip=cleanup/apt
 MM_OPTS  += --setup-hook='mkdir -p ./cache ./cache/archives ./cache/lists'
 MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/cache/apt/archives'
 MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/lib/apt/lists'
@@ -141,6 +143,7 @@ MM_OPTS  += --setup-hook='sync-in  ./cache/archives /var/cache/apt/archives'
 MM_OPTS  += --setup-hook='sync-in  ./cache/lists    /var/lib/apt/lists'
 MM_OPTS  += --customize-hook='sync-out /var/cache/apt/archives ./cache/archives'
 MM_OPTS  += --customize-hook='sync-out /var/lib/apt/lists      ./cache/lists'
+MM_OPTS  += --customize-hook='sync-out /root                   ./cache/root'
 # MM_OPTS  += --architectures=native
 # native
 # amd64
@@ -149,11 +152,10 @@ MM_OPTS  += --variant=minbase
 # custom
 # extract
 MM_OPTS  += --include=git,make,curl,mc
+MM_OPTS  += --include=linux-image-$(KERNEL_VER)
 MM_MIRROR = /etc/apt/sources.list
 
 MM_OPTS  += --dpkgopt='path-exclude=/usr/share/{doc,info,man,locale}/*'
-# MM_OPTS  += --dpkgopt='path-exclude=/usr/share/doc/*'
-# MM_OPTS  += --dpkgopt='path-exclude=/usr/share/locale/*'
 
 .PHONY: mmdeb
 mmdeb:
