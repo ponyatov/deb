@@ -132,24 +132,29 @@ $(GZ)/$(SYSLINUX_GZ):
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
 MM_MIRROR = http://mirror.mephi.ru/debian/
+# MM_OPTS  += --hook-dir=$(CWD)/hook
+MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
+MM_OPTS  += --setup-hook='mkdir -p ./cache "$$1"/var/cache/apt/archives/'
+MM_OPTS  += --setup-hook='sync-in  ./cache      /var/cache/apt/archives/'
+MM_OPTS  += --customize-hook='sync-out /var/cache/apt/archives ./cache'
+# MM_OPTS  += --architectures=native
+# native
+# amd64
 MM_OPTS  += --variant=minbase
 # minbase
 # custom
 # extract
-MM_PACKS  = base-files,libc6,libc-bin,coreutils,bash,dpkg,dash,diffutils
-# ,grep,gzip
-# MM_PACKS  = $(MM_PACKS),git,make,curl
-# MM_OPTS  += --include=$(MM_PACKS)
+MM_OPTS  += --include=git,make,curl,mc
 MM_MIRROR = /etc/apt/sources.list
 
-MM_OPTS  += --dpkgopt='path-exclude=/usr/share/man/*'
-MM_OPTS  += --dpkgopt='path-exclude=/usr/share/doc/*'
-MM_OPTS  += --dpkgopt='path-exclude=/usr/share/locale/*'
+MM_OPTS  += --dpkgopt='path-exclude=/usr/share/{doc,info,man,locale}/*'
+# MM_OPTS  += --dpkgopt='path-exclude=/usr/share/doc/*'
+# MM_OPTS  += --dpkgopt='path-exclude=/usr/share/locale/*'
 
 .PHONY: mmdeb
 mmdeb:
+	sudo rm -rf $(ROOT)
 	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT) $(MM_MIRROR)
-# sudo rm -rf $(ROOT)
 
 # merge
 
