@@ -132,12 +132,12 @@ $(GZ)/$(SYSLINUX_GZ):
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)/mmdeb
 MM_MIRROR = http://mirror.mephi.ru/debian/
-MM_OPTS  += --variant=extract
+MM_OPTS  += --variant=custom
 # minbase
 # custom
 # extract
-MM_PACKS  = base-files
-# ,bash,dash,coreutils,dpkg,grep,gzip
+MM_PACKS  = base-files,coreutils,bash,dpkg,dash,diff,ldconfig
+# ,grep,gzip
 # MM_PACKS  = $(MM_PACKS),git,make,curl
 MM_OPTS  += --include=$(MM_PACKS)
 MM_MIRROR = /etc/apt/sources.list
