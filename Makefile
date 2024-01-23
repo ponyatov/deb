@@ -88,7 +88,7 @@ $(GZ)/$(BUSYBOX_GZ):
 bb: $(ROOT)/bin/busybox
 $(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/README.md
 	rm -f $(REF)/$(BUSYBOX)/.config
-	cd $(REF)/$(BUSYBOX) ; make allnoconfig ;\
+	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT)/bb allnoconfig ;\
 	make menuconfig
 
 # merge
