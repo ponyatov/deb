@@ -49,11 +49,16 @@ $(ROOT)/sbin/init: $(D) dub.json Makefile
 
 .PHONY: fw
 fw: \
-	$(ROOT)/boot/vmlinuz-$(KERNEL_VER) \
-	$(ROOT)/bin/busybox syslinux
+	$(ROOT)/boot/vmlinuz-$(KERNEL_VER) $(ROOT)/boot/config-$(KERNEL_VER) \
+	$(ROOT)/lib/modules/$(KERNEL_VER)/modules.dep \
+	$(ROOT)/bin/busybox
 
-$(ROOT)/boot/vmlinuz-$(KERNEL_VER): /boot/vmlinuz-$(KERNEL_VER)
+$(ROOT)/boot/%-$(KERNEL_VER): /boot/%-$(KERNEL_VER)
 	cp $< $@
+$(ROOT)/lib/modules/$(KERNEL_VER)/modules.dep: /lib/modules/$(KERNEL_VER)/modules.dep
+	mkdir -p $(ROOT)/lib/modules
+	cp -r /lib/modules/$(KERNEL_VER) $(ROOT)/lib/modules/
+	touch $@
 
 # format
 format: tmp/format_d
