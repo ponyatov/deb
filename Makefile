@@ -130,16 +130,16 @@ $(GZ)/$(SYSLINUX_GZ):
 	$(CURL) $@ https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/$(SYSLINUX_V)/$(SYSLINUX_GZ)
 
 MM_SUITE  = bookworm
-MM_TARGET = $(ROOT)/mmdeb
+MM_TARGET = $(ROOT)
 MM_MIRROR = http://mirror.mephi.ru/debian/
-MM_OPTS  += --variant=custom
+MM_OPTS  += --variant=minbase
 # minbase
 # custom
 # extract
-MM_PACKS  = base-files,coreutils,bash,dpkg,dash,diff,ldconfig
+MM_PACKS  = base-files,libc6,libc-bin,coreutils,bash,dpkg,dash,diffutils
 # ,grep,gzip
 # MM_PACKS  = $(MM_PACKS),git,make,curl
-MM_OPTS  += --include=$(MM_PACKS)
+# MM_OPTS  += --include=$(MM_PACKS)
 MM_MIRROR = /etc/apt/sources.list
 
 MM_OPTS  += --dpkgopt='path-exclude=/usr/share/man/*'
@@ -148,8 +148,8 @@ MM_OPTS  += --dpkgopt='path-exclude=/usr/share/locale/*'
 
 .PHONY: mmdeb
 mmdeb:
-	sudo rm -rf $(ROOT)/$@
-	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT)/$@ $(MM_MIRROR)
+	sudo rm -rf $(ROOT)
+	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT) $(MM_MIRROR)
 # sudo mmdebstrap --variant=custom --include=busybox-static stable $(ROOT)/mmdeb /etc/apt/sources.list
 
 # merge
