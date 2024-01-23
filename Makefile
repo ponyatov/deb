@@ -148,9 +148,8 @@ MM_OPTS  += --dpkgopt='path-exclude=/usr/share/locale/*'
 
 .PHONY: mmdeb
 mmdeb:
-	sudo rm -rf $(ROOT)
 	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT) $(MM_MIRROR)
-# sudo mmdebstrap --variant=custom --include=busybox-static stable $(ROOT)/mmdeb /etc/apt/sources.list
+# sudo rm -rf $(ROOT)
 
 # merge
 
