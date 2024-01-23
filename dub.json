@@ -1,0 +1,8 @@
+{
+	"name":          "deb",
+	"description":   "корч Debian Linux",
+	"authors":      ["Dmitry Ponyatov <dponyatov@gmail.com>"],
+	"copyright":     "Copyright © 2024, Dmitry Ponyatov <dponyatov@gmail.com>",
+	"license":       "MIT",
+    "dependencies": {}
+}
