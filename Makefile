@@ -6,9 +6,10 @@ BRANCH  = $(shell git rev-parse --abbrev-ref HEAD)
 CORES  ?= $(shell grep processor /proc/cpuinfo | wc -l)
 
 # version
-D_VER       = 2.106.1
-KERNEL_VER  = $(shell uname -r)
-BUSYBOX_VER = 1.36.1
+D_VER        = 2.106.1
+KERNEL_VER   = $(shell uname -r)
+BUSYBOX_VER  = 1.36.1
+SYSLINUX_VER = 6.03
 
 # dir
 CWD  = $(CURDIR)
@@ -31,8 +32,11 @@ D += $(wildcard src/*.d*)
 D += $(wildcard init/src/*.d*)
 
 # package
-BUSYBOX    = busybox-$(BUSYBOX_VER)
-BUSYBOX_GZ = $(BUSYBOX).tar.bz2
+BUSYBOX     = busybox-$(BUSYBOX_VER)
+BUSYBOX_GZ  = $(BUSYBOX).tar.bz2
+
+SYSLINUX    = syslinux-$(SYSLINUX_VER)
+SYSLINUX_GZ = $(SYSLINUX).tar.xz
 
 # all
 .PHONY: all
@@ -45,7 +49,7 @@ $(ROOT)/sbin/init: $(D) dub.json Makefile
 .PHONY: fw
 fw: \
 	$(ROOT)/boot/vmlinuz-$(KERNEL_VER) \
-	$(ROOT)/bin/busybox
+	$(ROOT)/bin/busybox syslinux
 
 $(ROOT)/boot/vmlinuz-$(KERNEL_VER): /boot/vmlinuz-$(KERNEL_VER)
 	cp $< $@
@@ -61,6 +65,8 @@ bin/$(MODULE): $(D) Makefile
 
 $(REF)/%/README.md: $(GZ)/%.tar.bz2
 	cd $(REF) ; bzcat $< | tar x && touch $@
+$(REF)/%/README.md: $(GZ)/%.tar.xz
+	cd $(REF) ; xzcat $< | tar x && touch $@
 
 # doc
 .PHONY: doc
@@ -88,7 +94,7 @@ $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb:
 	$(CURL) $@ https://downloads.dlang.org/releases/2.x/$(D_VER)/dmd_$(D_VER)-0_amd64.deb
 
 $(GZ)/$(BUSYBOX_GZ):
-	$(CURL) $@ https://busybox.net/downloads/busybox-1.36.1.tar.bz2
+	$(CURL) $@ https://busybox.net/downloads/$(BUSYBOX_GZ)
 
 .PHONY: bb bbconfig
 bb: $(ROOT)/bin/busybox
@@ -102,6 +108,14 @@ bbconfig:
 	rm -f $(REF)/$(BUSYBOX)/.config
 	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT) allnoconfig ;\
 	make menuconfig
+
+.PHONY: syslinux
+syslinux: $(REF)/$(SYSLINUX)/README.md
+	mkdir -p $(TMP)/syslinux
+	cd $(REF)/$(SYSLINUX) ; make O=$(TMP)/syslinux -j$(CORES) bios
+
+$(GZ)/$(SYSLINUX_GZ):
+	$(CURL) $@ https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/$(SYSLINUX_GZ)
 
 # merge
 
