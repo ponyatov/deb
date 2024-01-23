@@ -5,11 +5,12 @@ MODULE  = $(notdir $(CURDIR))
 D_VER = 2.106.1
 
 # dir
-CWD = $(CURDIR)
-BIN = $(CWD)/bin
-SRC = $(CWD)/src
-TMP = $(CWD)/tmp
-GZ  = $(HOME)/gz
+CWD  = $(CURDIR)
+BIN  = $(CWD)/bin
+SRC  = $(CWD)/src
+TMP  = $(CWD)/tmp
+GZ   = $(HOME)/gz
+ROOT = $(CWD)/root
 
 # tool
 CURL = curl -L -o
@@ -23,8 +24,10 @@ D += $(wildcard src/*.d*)
 
 # all
 .PHONY: all
-all: $(D)
-	$(RUN)
+all: $(ROOT)/sbin/init
+	sudo chroot $(ROOT) init
+$(ROOT)/sbin/init: $(D)
+	$(BLD) && chmod +x $@
 
 # format
 format: tmp/format_d
@@ -48,7 +51,7 @@ doc/Programming_in_D.pdf:
 .PHONY: install update gz
 install: doc gz
 	$(MAKE) update
-	dub fetch dfmt
+	dub build dfmt
 update:
 	sudo apt update
 	sudo apt install -yu `cat apt.txt`
