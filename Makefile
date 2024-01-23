@@ -133,8 +133,19 @@ MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)/mmdeb
 MM_MIRROR = http://mirror.mephi.ru/debian/
 MM_OPTS  += --variant=extract
-MM_PACKS += base-files
+# minbase
+# custom
+# extract
+MM_PACKS  = base-files
+# ,bash,dash,coreutils,dpkg,grep,gzip
+# MM_PACKS  = $(MM_PACKS),git,make,curl
 MM_OPTS  += --include=$(MM_PACKS)
+MM_MIRROR = /etc/apt/sources.list
+
+MM_OPTS  += --dpkgopt='path-exclude=/usr/share/man/*'
+MM_OPTS  += --dpkgopt='path-exclude=/usr/share/doc/*'
+MM_OPTS  += --dpkgopt='path-exclude=/usr/share/locale/*'
+
 .PHONY: mmdeb
 mmdeb:
 	sudo rm -rf $(ROOT)/$@
