@@ -84,12 +84,18 @@ $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb:
 $(GZ)/$(BUSYBOX_GZ):
 	$(CURL) $@ https://busybox.net/downloads/busybox-1.36.1.tar.bz2
 
-.PHONY: bb
-bb: $(ROOT)/bin/busybox
-$(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/README.md
+.PHONY: bb bbconfig
+bbconfig:
 	rm -f $(REF)/$(BUSYBOX)/.config
 	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT)/bb allnoconfig ;\
 	make menuconfig
+bb: $(ROOT)/bin/busybox
+
+$(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/.config
+	cd $(REF)/$(BUSYBOX) ; make menuconfig
+
+$(REF)/$(BUSYBOX)/.config: $(REF)/$(BUSYBOX)/README.md
+	git checkout $@
 
 # merge
 
