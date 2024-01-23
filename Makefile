@@ -27,7 +27,7 @@ D += $(wildcard src/*.d*)
 .PHONY: all
 all: $(ROOT)/sbin/init
 	sudo chroot $(ROOT) init
-$(ROOT)/sbin/init: $(D)
+$(ROOT)/sbin/init: $(D) dub.json
 	$(BLD) && chmod +x $@
 
 .PHONY: fw
