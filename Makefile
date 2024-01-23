@@ -163,6 +163,18 @@ mmdeb:
 	sudo rm -rf $(ROOT)
 	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT) $(MM_MIRROR)
 
+.PHONY: iso
+iso: $(FW)/$(MODULE).iso
+https://wiki.syslinux.org/wiki/index.php?title=Isohybrid
+$(FW)/$(MODULE).iso:
+	sudo cp /usr/lib/ISOLINUX/isohdpfx.bin $(ROOT)/boot/isohdpfx.bin
+	sudo cp /usr/lib/ISOLINUX/isolinux.bin $(ROOT)/boot/isolinux.bin
+	sudo xorriso -as mkisofs -o $@ \
+		-isohybrid-mbr $(ROOT)/boot/isohdpfx.bin \
+		-c isolinux/boot.cat -b /boot/isolinux.bin \
+		-no-emul-boot -boot-load-size 4 -boot-info-table \
+		$(ROOT)
+
 # merge
 
 .PHONY: release
