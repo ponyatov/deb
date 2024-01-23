@@ -38,7 +38,7 @@ BUSYBOX_GZ = $(BUSYBOX).tar.bz2
 .PHONY: all
 all: $(ROOT)/sbin/init
 	file $< ; echo ; ldd $<
-# sudo chroot $(ROOT) init
+	sudo chroot $(ROOT) /bin/sh
 $(ROOT)/sbin/init: $(D) dub.json Makefile
 	$(BLD) :init && chmod +x $@
 
@@ -92,9 +92,9 @@ $(GZ)/$(BUSYBOX_GZ):
 
 .PHONY: bb bbconfig
 bb: $(ROOT)/bin/busybox
-$(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/.config
 	cd $(REF)/$(BUSYBOX) ; make menuconfig ;\
 	make -j$(CORES) && make install
+$(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/.config
 
 $(REF)/$(BUSYBOX)/.config: $(REF)/$(BUSYBOX)/README.md
 	git checkout $@
