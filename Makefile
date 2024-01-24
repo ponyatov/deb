@@ -8,9 +8,6 @@ CORES  ?= $(shell grep processor /proc/cpuinfo | wc -l)
 # version
 D_VER        = 2.106.1
 KERNEL_VER   = $(shell uname -r)
-BUSYBOX_VER  = 1.36.1
-SYSLINUX_V   = 6.04
-SYSLINUX_VER = $(SYSLINUX_V)-pre1
 
 # dir
 CWD  = $(CURDIR)
@@ -35,11 +32,6 @@ D += $(wildcard src/*.d*)
 D += $(wildcard init/src/*.d*)
 
 # package
-BUSYBOX     = busybox-$(BUSYBOX_VER)
-BUSYBOX_GZ  = $(BUSYBOX).tar.bz2
-
-SYSLINUX    = syslinux-$(SYSLINUX_VER)
-SYSLINUX_GZ = $(SYSLINUX).tar.xz
 
 # all
 .PHONY: all
@@ -98,37 +90,13 @@ install: doc gz
 update:
 	sudo apt update
 	sudo apt install -yu `cat apt.txt`
-gz: $(DC) $(DUB) \
-	$(GZ)/$(BUSYBOX_GZ)
+gz: $(DC) $(DUB)
 
 $(DC) $(DUB): $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb
 	sudo dpkg -i $< && sudo touch $(DC) $(DUB)
 $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb:
 	$(CURL) $@ https://downloads.dlang.org/releases/2.x/$(D_VER)/dmd_$(D_VER)-0_amd64.deb
 
-$(GZ)/$(BUSYBOX_GZ):
-	$(CURL) $@ https://busybox.net/downloads/$(BUSYBOX_GZ)
-
-.PHONY: bb bbconfig
-bb: $(ROOT)/bin/busybox
-	cd $(REF)/$(BUSYBOX) ; make menuconfig ;\
-	make -j$(CORES) && make install
-$(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/.config
-
-$(REF)/$(BUSYBOX)/.config: $(REF)/$(BUSYBOX)/README.md
-	git checkout $@
-bbconfig:
-	rm -f $(REF)/$(BUSYBOX)/.config
-	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT) allnoconfig ;\
-	make menuconfig
-
-.PHONY: syslinux
-syslinux: $(REF)/$(SYSLINUX)/README.md
-	rm -rf $(TMP)/syslinux ; mkdir -p $(TMP)/syslinux
-	cd $(REF)/$(SYSLINUX) ; LD='ld --no-warn-rwx-segments' make V=1 O=$(TMP)/syslinux -j$(CORES) bios
-
-$(GZ)/$(SYSLINUX_GZ):
-	$(CURL) $@ https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/$(SYSLINUX_V)/$(SYSLINUX_GZ)
 
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
