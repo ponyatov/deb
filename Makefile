@@ -121,7 +121,7 @@ MM_OPTS  += --variant=minbase
 # minbase
 # custom
 # extract
-MM_OPTS  += --include=git,make,curl,mc
+MM_OPTS  += --include=git,make,curl,mc,vim
 MM_OPTS  += --include=linux-image-$(KERNEL_VER)
 MM_MIRROR = /etc/apt/sources.list
 
@@ -133,25 +133,28 @@ root:
 	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT) $(MM_MIRROR)
 
 .PHONY: boot
-SYSLINUX_FILES += $(ROOT)/boot/isohdpfx.bin $(ROOT)/boot/isolinux.bin
+SYSLINUX_FILES += $(ROOT)/isolinux/isohdpfx.bin $(ROOT)/isolinux/isolinux.bin
+SYSLINUX_FILES += $(ROOT)/isolinux/ldlinux.c32 $(ROOT)/isolinux/ls.c32
 boot: $(SYSLINUX_FILES)
-$(ROOT)/boot/%: /usr/lib/ISOLINUX/%
+$(ROOT)/isolinux/%: /usr/lib/ISOLINUX/%
+	sudo cp $< $@
+$(ROOT)/isolinux/%: /usr/lib/syslinux/modules/bios/%
 	sudo cp $< $@
 
 .PHONY: iso
-iso: $(SYSLINUX_FILES) $(FW)/$(MODULE).iso
-# https://wiki.syslinux.org/wiki/index.php?title=Isohybrid
+iso: $(FW)/$(MODULE).iso
 .PHONY: $(FW)/$(MODULE).iso
 $(FW)/$(MODULE).iso: $(SYSLINUX_FILES)
+# https://wiki.syslinux.org/wiki/index.php?title=Isohybrid
 	sudo xorriso -as mkisofs -o $@ \
-		-isohybrid-mbr $(ROOT)/boot/isohdpfx.bin \
-		-c boot/isolinux.cat -b /boot/isolinux.bin \
+		-isohybrid-mbr $(ROOT)/isolinux/isohdpfx.bin \
+		-c isolinux/isolinux.cat -b /isolinux/isolinux.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		$(ROOT)
 
 .PHONY: qemu
-qemu: $(FW)/$(MODULE).iso
-	qemu-system-x86_64 -cdrom $< -boot d
+qemu:
+	qemu-system-x86_64 -m 512m -cdrom $(FW)/$(MODULE).iso -boot d
 
 # merge
 

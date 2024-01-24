@@ -4,3 +4,4 @@ g++ build-essential
 libncurses-dev nasm
 mmdebstrap
 xorriso isolinux syslinux extlinux
+qemu-system-x86
