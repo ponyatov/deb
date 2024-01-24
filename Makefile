@@ -18,6 +18,7 @@ BIN  = $(CWD)/bin
 SRC  = $(CWD)/src
 TMP  = $(CWD)/tmp
 GZ   = $(HOME)/gz
+FW   = $(CWD)/fw
 REF  = $(CWD)/ref
 ROOT = $(CWD)/root
 
@@ -132,25 +133,58 @@ $(GZ)/$(SYSLINUX_GZ):
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
 MM_MIRROR = http://mirror.mephi.ru/debian/
+MM_OPTS  += --setup-hook='git checkout cache/.gitignore "$$1"/.gitignore'
+# .deb cache
+MM_OPTS  += --skip=update
+MM_OPTS  += --skip=essential/unlink --skip=cleanup/apt
+MM_OPTS  += --setup-hook='mkdir -p ./cache ./cache/archives ./cache/lists'
+MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/cache/apt/archives'
+MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/lib/apt/lists'
+MM_OPTS  += --setup-hook='sync-in  ./cache/archives /var/cache/apt/archives'
+MM_OPTS  += --setup-hook='sync-in  ./cache/lists    /var/lib/apt/lists'
+MM_OPTS  += --customize-hook='apt update && apt upgrade -y'
+MM_OPTS  += --customize-hook='sync-out /var/cache/apt/archives ./cache/archives'
+MM_OPTS  += --customize-hook='sync-out /var/lib/apt/lists      ./cache/lists'
+MM_OPTS  += --customize-hook='sync-out /root                   ./cache/root'
+# MM_OPTS  += --architectures=native
+# native
+# amd64
 MM_OPTS  += --variant=minbase
 # minbase
 # custom
 # extract
-MM_PACKS  = base-files,libc6,libc-bin,coreutils,bash,dpkg,dash,diffutils
-# ,grep,gzip
-# MM_PACKS  = $(MM_PACKS),git,make,curl
-# MM_OPTS  += --include=$(MM_PACKS)
+MM_OPTS  += --include=git,make,curl,mc
+MM_OPTS  += --include=linux-image-$(KERNEL_VER)
 MM_MIRROR = /etc/apt/sources.list
 
-MM_OPTS  += --dpkgopt='path-exclude=/usr/share/man/*'
-MM_OPTS  += --dpkgopt='path-exclude=/usr/share/doc/*'
-MM_OPTS  += --dpkgopt='path-exclude=/usr/share/locale/*'
+MM_OPTS  += --dpkgopt='path-exclude=/usr/share/{doc,info,man,locale}/*'
 
 .PHONY: mmdeb
 mmdeb:
 	sudo rm -rf $(ROOT)
 	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT) $(MM_MIRROR)
-# sudo mmdebstrap --variant=custom --include=busybox-static stable $(ROOT)/mmdeb /etc/apt/sources.list
+
+.PHONY: iso
+
+SYSLINUX_FILES += $(ROOT)/boot/isohdpfx.bin $(ROOT)/boot/isolinux.bin
+
+$(ROOT)/boot/%: /usr/lib/ISOLINUX/%
+	sudo cp %< %@
+
+iso: $(SYSLINUX_FILES) $(FW)/$(MODULE).iso
+# https://wiki.syslinux.org/wiki/index.php?title=Isohybrid
+
+.PHONY: $(FW)/$(MODULE).iso
+$(FW)/$(MODULE).iso: $(SYSLINUX_FILES)
+	sudo xorriso -as mkisofs -o $@ \
+		-isohybrid-mbr $(ROOT)/boot/isohdpfx.bin \
+		-c boot/isolinux.cat -b /boot/isolinux.bin \
+		-no-emul-boot -boot-load-size 4 -boot-info-table \
+		$(ROOT)
+
+.PHONY: qemu
+qemu: $(FW)/$(MODULE).iso
+	qemu-system-x86_64 -cdrom $< -boot d
 
 # merge
 
