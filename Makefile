@@ -136,7 +136,7 @@ root:
 SYSLINUX_FILES += $(ROOT)/boot/isohdpfx.bin $(ROOT)/boot/isolinux.bin
 boot: $(SYSLINUX_FILES)
 $(ROOT)/boot/%: /usr/lib/ISOLINUX/%
-	sudo cp %< %@
+	sudo cp $< $@
 
 .PHONY: iso
 iso: $(SYSLINUX_FILES) $(FW)/$(MODULE).iso
