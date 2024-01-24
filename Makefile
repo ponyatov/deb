@@ -102,9 +102,10 @@ MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
 MM_MIRROR = http://mirror.mephi.ru/debian/
 MM_OPTS  += --setup-hook='git checkout cache/.gitignore "$$1"/.gitignore'
+MM_OPTS  += --customize-hook='git checkout "$$1"'
 # .deb cache
-MM_OPTS  += --skip=update
-MM_OPTS  += --skip=essential/unlink --skip=cleanup/apt
+# --skip=cleanup/apt
+MM_OPTS  += --skip=update --skip=essential/unlink
 MM_OPTS  += --setup-hook='mkdir -p ./cache ./cache/archives ./cache/lists'
 MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/cache/apt/archives'
 MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/lib/apt/lists'
@@ -147,6 +148,7 @@ iso: $(FW)/$(MODULE).iso
 $(FW)/$(MODULE).iso: $(SYSLINUX_FILES)
 # https://wiki.syslinux.org/wiki/index.php?title=Isohybrid
 	sudo xorriso -as mkisofs -o $@ \
+		-partition_offset 16 -A $(MODULE) \
 		-isohybrid-mbr $(ROOT)/isolinux/isohdpfx.bin \
 		-c isolinux/isolinux.cat -b /isolinux/isolinux.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
