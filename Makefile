@@ -97,36 +97,35 @@ $(DC) $(DUB): $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb
 $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb:
 	$(CURL) $@ https://downloads.dlang.org/releases/2.x/$(D_VER)/dmd_$(D_VER)-0_amd64.deb
 
-
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
+MM_ARCH   = i386
+MM_OPTS  += --architectures=$(MM_ARCH)
+# MM_MIRROR = /etc/apt/sources.list
 MM_MIRROR = http://mirror.mephi.ru/debian/
-MM_OPTS  += --setup-hook='git checkout cache/.gitignore "$$1"/.gitignore'
-MM_OPTS  += --customize-hook='git checkout "$$1"'
-# .deb cache
-# --skip=cleanup/apt
-MM_OPTS  += --skip=update --skip=essential/unlink
-MM_OPTS  += --setup-hook='mkdir -p ./cache ./cache/archives ./cache/lists'
-MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/cache/apt/archives'
-MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/lib/apt/lists'
-MM_OPTS  += --setup-hook='sync-in  ./cache/archives /var/cache/apt/archives'
-MM_OPTS  += --setup-hook='sync-in  ./cache/lists    /var/lib/apt/lists'
-MM_OPTS  += --customize-hook='apt update && apt upgrade -y'
-MM_OPTS  += --customize-hook='sync-out /var/cache/apt/archives ./cache/archives'
-MM_OPTS  += --customize-hook='sync-out /var/lib/apt/lists      ./cache/lists'
-MM_OPTS  += --customize-hook='sync-out /root                   ./cache/root'
-# MM_OPTS  += --architectures=native
-# native
-# amd64
+MM_OPTS  += --setup-hook='mkdir     -p "$$1"'
+MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
+# MM_OPTS  += --setup-hook='git checkout cache/.gitignore'
+# MM_OPTS  += --customize-hook='git checkout "$$1"'
+# # .deb cache
+# # --skip=cleanup/apt
+# MM_OPTS  += --skip=update --skip=essential/unlink
+# MM_OPTS  += --setup-hook='mkdir -p ./cache ./cache/archives ./cache/lists'
+# MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/cache/apt/archives'
+# MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/lib/apt/lists'
+# MM_OPTS  += --setup-hook='sync-in  ./cache/archives /var/cache/apt/archives'
+# MM_OPTS  += --setup-hook='sync-in  ./cache/lists    /var/lib/apt/lists'
+# MM_OPTS  += --customize-hook='apt update && apt upgrade -y'
+# MM_OPTS  += --customize-hook='sync-out /var/cache/apt/archives ./cache/archives'
+# MM_OPTS  += --customize-hook='sync-out /var/lib/apt/lists      ./cache/lists'
+# MM_OPTS  += --customize-hook='sync-out /root                   ./cache/root'
 MM_OPTS  += --variant=minbase
 # minbase
 # custom
 # extract
-MM_OPTS  += --include=git,make,curl,mc,vim
-MM_OPTS  += --include=linux-image-$(KERNEL_VER)
-MM_MIRROR = /etc/apt/sources.list
+MM_OPTS  += --include=`cat apt.target | tr [:space:] ,`linux-image-$(MM_ARCH)
 
-MM_OPTS  += --dpkgopt='path-exclude=/usr/share/{doc,info,man,locale}/*'
+# MM_OPTS  += --dpkgopt='path-exclude=/usr/share/{doc,info,man,locale}/*'
 
 .PHONY: root
 root:
