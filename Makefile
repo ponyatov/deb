@@ -170,10 +170,11 @@ usb:
 # dd bs=440 count=1 conv=notrunc if=/usr/lib/syslinux/mbr/mbr.bin of=/dev/$(USB)
 # /sbin/mkfs.vfat -v /dev/$(USB)1 -i DeadBeef -n $(MODULE)
 # syslinux -i /dev/$(USB)1
-# mcopy -i /dev/$(USB)1 syslinux.cfg ::
-# mcopy -i /dev/$(USB)1 /boot/vmlinuz-$(KERNEL_VER) ::
-# mcopy -i /dev/$(USB)1 /boot/initrd.img-$(KERNEL_VER) ::
+	mcopy -i /dev/$(USB)1 -o syslinux.cfg ::
+# mcopy -i /dev/$(USB)1 -o /boot/vmlinuz-$(KERNEL_VER) ::
+# mcopy -i /dev/$(USB)1 -o /boot/initrd.img-$(KERNEL_VER) ::
 	mdir  -i /dev/$(USB)1
+# sudo mkfs.ext3 -v /dev/$(USB)2 -L B00bCafe -d $(ROOT)
 	qemu-system-x86_64 -m 1G -hdc /dev/$(USB) -boot c
 
 # merge
