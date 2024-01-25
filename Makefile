@@ -158,6 +158,16 @@ $(FW)/$(MODULE).iso: $(SYSLINUX_FILES)
 qemu:
 	qemu-system-x86_64 -m 512m -cdrom $(FW)/$(MODULE).iso -boot d
 
+.PHONY: usb
+USB=null
+usb:
+	sudo dmesg | grep $(USB)
+	sudo chown $(USER) /dev/$(USB) ; ls -la /dev/$(USB)
+	/sbin/fdisk -l /dev/$(USB)
+	/sbin/fdisk    /dev/$(USB)
+	sudo chown $(USER) /dev/$(USB)*
+	/sbin/mkfs.vfat -v /dev/$(USB)1
+
 # merge
 
 .PHONY: release
