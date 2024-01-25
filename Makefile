@@ -170,6 +170,12 @@ usb:
 # sudo mkfs.ext3 -v /dev/$(USB)2 -L B00bCafe -d $(ROOT)
 	qemu-system-x86_64 -m 1G -hdc /dev/$(USB) -boot c
 
+.PHONY: squid proxy
+proxy: squid
+squid: $(CWD)/etc/squid/squid.conf
+	sudo systemctl stop squid
+	/usr/sbin/squid -d 7 -f $<
+
 # merge
 
 .PHONY: release
