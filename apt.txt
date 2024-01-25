@@ -3,4 +3,5 @@ code meld doxygen clang-format
 g++ build-essential
 libncurses-dev nasm
 mmdebstrap
-xorriso isolinux syslinux extlinux
+xorriso isolinux syslinux extlinux dosfstools
+qemu-system-x86

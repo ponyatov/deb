@@ -8,9 +8,6 @@ CORES  ?= $(shell grep processor /proc/cpuinfo | wc -l)
 # version
 D_VER        = 2.106.1
 KERNEL_VER   = $(shell uname -r)
-BUSYBOX_VER  = 1.36.1
-SYSLINUX_V   = 6.04
-SYSLINUX_VER = $(SYSLINUX_V)-pre1
 
 # dir
 CWD  = $(CURDIR)
@@ -18,6 +15,7 @@ BIN  = $(CWD)/bin
 SRC  = $(CWD)/src
 TMP  = $(CWD)/tmp
 GZ   = $(HOME)/gz
+FW   = $(CWD)/fw
 REF  = $(CWD)/ref
 ROOT = $(CWD)/root
 
@@ -34,11 +32,6 @@ D += $(wildcard src/*.d*)
 D += $(wildcard init/src/*.d*)
 
 # package
-BUSYBOX     = busybox-$(BUSYBOX_VER)
-BUSYBOX_GZ  = $(BUSYBOX).tar.bz2
-
-SYSLINUX    = syslinux-$(SYSLINUX_VER)
-SYSLINUX_GZ = $(SYSLINUX).tar.xz
 
 # all
 .PHONY: all
@@ -97,45 +90,22 @@ install: doc gz
 update:
 	sudo apt update
 	sudo apt install -yu `cat apt.txt`
-gz: $(DC) $(DUB) \
-	$(GZ)/$(BUSYBOX_GZ)
+gz: $(DC) $(DUB)
 
 $(DC) $(DUB): $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb
 	sudo dpkg -i $< && sudo touch $(DC) $(DUB)
 $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb:
 	$(CURL) $@ https://downloads.dlang.org/releases/2.x/$(D_VER)/dmd_$(D_VER)-0_amd64.deb
 
-$(GZ)/$(BUSYBOX_GZ):
-	$(CURL) $@ https://busybox.net/downloads/$(BUSYBOX_GZ)
-
-.PHONY: bb bbconfig
-bb: $(ROOT)/bin/busybox
-	cd $(REF)/$(BUSYBOX) ; make menuconfig ;\
-	make -j$(CORES) && make install
-$(ROOT)/bin/busybox: $(REF)/$(BUSYBOX)/.config
-
-$(REF)/$(BUSYBOX)/.config: $(REF)/$(BUSYBOX)/README.md
-	git checkout $@
-bbconfig:
-	rm -f $(REF)/$(BUSYBOX)/.config
-	cd $(REF)/$(BUSYBOX) ; make CONFIG_PREFIX=$(ROOT) allnoconfig ;\
-	make menuconfig
-
-.PHONY: syslinux
-syslinux: $(REF)/$(SYSLINUX)/README.md
-	rm -rf $(TMP)/syslinux ; mkdir -p $(TMP)/syslinux
-	cd $(REF)/$(SYSLINUX) ; LD='ld --no-warn-rwx-segments' make V=1 O=$(TMP)/syslinux -j$(CORES) bios
-
-$(GZ)/$(SYSLINUX_GZ):
-	$(CURL) $@ https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/$(SYSLINUX_V)/$(SYSLINUX_GZ)
 
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
 MM_MIRROR = http://mirror.mephi.ru/debian/
 MM_OPTS  += --setup-hook='git checkout cache/.gitignore "$$1"/.gitignore'
+MM_OPTS  += --customize-hook='git checkout "$$1"'
 # .deb cache
-MM_OPTS  += --skip=update
-MM_OPTS  += --skip=essential/unlink --skip=cleanup/apt
+# --skip=cleanup/apt
+MM_OPTS  += --skip=update --skip=essential/unlink
 MM_OPTS  += --setup-hook='mkdir -p ./cache ./cache/archives ./cache/lists'
 MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/cache/apt/archives'
 MM_OPTS  += --setup-hook='mkdir -p "$$1"/var/lib/apt/lists'
@@ -152,28 +122,60 @@ MM_OPTS  += --variant=minbase
 # minbase
 # custom
 # extract
-MM_OPTS  += --include=git,make,curl,mc
+MM_OPTS  += --include=git,make,curl,mc,vim
 MM_OPTS  += --include=linux-image-$(KERNEL_VER)
 MM_MIRROR = /etc/apt/sources.list
 
 MM_OPTS  += --dpkgopt='path-exclude=/usr/share/{doc,info,man,locale}/*'
 
-.PHONY: mmdeb
-mmdeb:
+.PHONY: root
+root:
 	sudo rm -rf $(ROOT)
 	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT) $(MM_MIRROR)
 
+.PHONY: boot
+SYSLINUX_FILES += $(ROOT)/isolinux/isohdpfx.bin $(ROOT)/isolinux/isolinux.bin
+SYSLINUX_FILES += $(ROOT)/isolinux/ldlinux.c32 $(ROOT)/isolinux/ls.c32
+boot: $(SYSLINUX_FILES)
+$(ROOT)/isolinux/%: /usr/lib/ISOLINUX/%
+	sudo cp $< $@
+$(ROOT)/isolinux/%: /usr/lib/syslinux/modules/bios/%
+	sudo cp $< $@
+
 .PHONY: iso
 iso: $(FW)/$(MODULE).iso
-https://wiki.syslinux.org/wiki/index.php?title=Isohybrid
-$(FW)/$(MODULE).iso:
-	sudo cp /usr/lib/ISOLINUX/isohdpfx.bin $(ROOT)/boot/isohdpfx.bin
-	sudo cp /usr/lib/ISOLINUX/isolinux.bin $(ROOT)/boot/isolinux.bin
+.PHONY: $(FW)/$(MODULE).iso
+$(FW)/$(MODULE).iso: $(SYSLINUX_FILES)
+# https://wiki.syslinux.org/wiki/index.php?title=Isohybrid
 	sudo xorriso -as mkisofs -o $@ \
-		-isohybrid-mbr $(ROOT)/boot/isohdpfx.bin \
-		-c isolinux/boot.cat -b /boot/isolinux.bin \
+		-partition_offset 16 -A $(MODULE) \
+		-isohybrid-mbr $(ROOT)/isolinux/isohdpfx.bin \
+		-c isolinux/isolinux.cat -b /isolinux/isolinux.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		$(ROOT)
+
+.PHONY: qemu
+qemu:
+	qemu-system-x86_64 -m 512m -cdrom $(FW)/$(MODULE).iso -boot d
+
+.PHONY: usb
+USB=null
+usb:
+	sudo dmesg | grep $(USB)
+	sudo chown $(USER) /dev/$(USB) ; ls -la /dev/$(USB)
+	/sbin/fdisk -l /dev/$(USB)
+	/sbin/fdisk    /dev/$(USB)
+	sudo chown $(USER) /dev/$(USB)*
+# 
+# dd bs=440 count=1 conv=notrunc if=/usr/lib/syslinux/mbr/mbr.bin of=/dev/$(USB)
+# /sbin/mkfs.vfat -v /dev/$(USB)1 -i DeadBeef -n $(MODULE)
+# syslinux -i /dev/$(USB)1
+	mcopy -i /dev/$(USB)1 -o syslinux.cfg ::
+# mcopy -i /dev/$(USB)1 -o /boot/vmlinuz-$(KERNEL_VER) ::
+# mcopy -i /dev/$(USB)1 -o /boot/initrd.img-$(KERNEL_VER) ::
+	mdir  -i /dev/$(USB)1
+# sudo mkfs.ext3 -v /dev/$(USB)2 -L B00bCafe -d $(ROOT)
+	qemu-system-x86_64 -m 1G -hdc /dev/$(USB) -boot c
 
 # merge
 
