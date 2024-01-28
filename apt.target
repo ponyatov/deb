@@ -1,4 +1,4 @@
+systemd,ifupdown,iproute2,wpasupplicant
 git,make,curl
 mc,vim
-iproute2,wpasupplicant
 xserver-xorg-video-intel,xserver-xorg-video-vesa,xterm,xinit,i3

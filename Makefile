@@ -108,6 +108,9 @@ MM_MIRROR = etc/apt/sources.list
 MM_OPTS  += --setup-hook='mkdir     -p "$$1"'
 MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
 MM_OPTS  += --customize-hook='git checkout "$$1"'
+MM_OPTS  += --customize-hook='sync-in etc/fstab /etc/fstab'
+MM_OPTS  += --customize-hook='sync-in etc/network /etc/network'
+MM_OPTS  += --customize-hook='sync-in etc/wpa_supplicant /etc/wpa_supplicant'
 MM_OPTS  += --customize-hook='apt update && apt upgrade -y'
 MM_OPTS  += --variant=minbase
 # minbase
@@ -163,13 +166,13 @@ usb:
 # dd bs=440 count=1 conv=notrunc if=/usr/lib/syslinux/mbr/mbr.bin of=/dev/$(USB)
 # /sbin/mkfs.vfat -v /dev/$(USB)1 -i DeadBeef -n DeadBeef
 # syslinux -i /dev/$(USB)1
-	mcopy -i /dev/$(USB)1 -o syslinux.cfg ::
-	mcopy -i /dev/$(USB)1 -o $(ROOT)/boot ::
+# mcopy -i /dev/$(USB)1 -o syslinux.cfg ::
+# mcopy -i /dev/$(USB)1 -o $(ROOT)/boot ::
 # mcopy -i /dev/$(USB)1 -o $(ROOT)/boot/vmlinuz-* ::
 # mcopy -i /dev/$(USB)1 -o $(ROOT)/boot/initrd.img-* ::
 	mdir  -i /dev/$(USB)1
 # 
-# sudo mkfs.ext3 -v /dev/$(USB)2 -L B00bCafe -d $(ROOT)
+	sudo mkfs.ext3 -v /dev/$(USB)2 -L B00bCafe -d $(ROOT)
 	$(QEMU) -hdc /dev/$(USB) -boot c
 
 .PHONY: squid proxy
