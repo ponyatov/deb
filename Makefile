@@ -147,8 +147,9 @@ $(FW)/$(MODULE).iso: $(SYSLINUX_FILES)
 		$(ROOT)
 
 .PHONY: qemu
+QEMU = qemu-system-i386 -m 512m
 qemu:
-	qemu-system-i386 -m 512m -cdrom $(FW)/$(MODULE).iso -boot d
+	$(QEMU) -cdrom $(FW)/$(MODULE).iso -boot d
 
 .PHONY: usb
 USB=null
@@ -160,14 +161,16 @@ usb:
 	sudo chown $(USER) /dev/$(USB)*
 # 
 # dd bs=440 count=1 conv=notrunc if=/usr/lib/syslinux/mbr/mbr.bin of=/dev/$(USB)
-# /sbin/mkfs.vfat -v /dev/$(USB)1 -i DeadBeef -n $(MODULE)
+# /sbin/mkfs.vfat -v /dev/$(USB)1 -i DeadBeef -n DeadBeef
 # syslinux -i /dev/$(USB)1
 	mcopy -i /dev/$(USB)1 -o syslinux.cfg ::
-# mcopy -i /dev/$(USB)1 -o /boot/vmlinuz-$(KERNEL_VER) ::
-# mcopy -i /dev/$(USB)1 -o /boot/initrd.img-$(KERNEL_VER) ::
+	mcopy -i /dev/$(USB)1 -o $(ROOT)/boot ::
+# mcopy -i /dev/$(USB)1 -o $(ROOT)/boot/vmlinuz-* ::
+# mcopy -i /dev/$(USB)1 -o $(ROOT)/boot/initrd.img-* ::
 	mdir  -i /dev/$(USB)1
+# 
 # sudo mkfs.ext3 -v /dev/$(USB)2 -L B00bCafe -d $(ROOT)
-	qemu-system-x86_64 -m 1G -hdc /dev/$(USB) -boot c
+	$(QEMU) -hdc /dev/$(USB) -boot c
 
 .PHONY: squid proxy
 # https://orcacore.com/install-squid-proxy-debian-11/
