@@ -108,13 +108,7 @@ MM_MIRROR = etc/apt/sources.list
 MM_OPTS  += --setup-hook='mkdir     -p "$$1"'
 MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
 MM_OPTS  += --customize-hook='git checkout "$$1"'
-# MM_OPTS  += --skip=update --skip=essential/unlink
-# MM_OPTS  += --setup-hook='sync-in  ./cache/archives /var/cache/apt/archives'
-# MM_OPTS  += --setup-hook='sync-in  ./cache/lists    /var/lib/apt/lists'
-# MM_OPTS  += --customize-hook='apt update && apt upgrade -y'
-# MM_OPTS  += --customize-hook='sync-out /var/cache/apt/archives ./cache/archives'
-# MM_OPTS  += --customize-hook='sync-out /var/lib/apt/lists      ./cache/lists'
-# MM_OPTS  += --customize-hook='sync-out /root                   ./cache/root'
+MM_OPTS  += --customize-hook='apt update && apt upgrade -y'
 MM_OPTS  += --variant=minbase
 # minbase
 # custom
@@ -129,9 +123,12 @@ root:
 	sudo mmdebstrap $(MM_OPTS) $(MM_SUITE) $(ROOT) $(MM_MIRROR)
 
 .PHONY: boot
+SYSLINUX_FILES += $(ROOT)/isolinux/isolinux.cfg
 SYSLINUX_FILES += $(ROOT)/isolinux/isohdpfx.bin $(ROOT)/isolinux/isolinux.bin
 SYSLINUX_FILES += $(ROOT)/isolinux/ldlinux.c32 $(ROOT)/isolinux/ls.c32
 boot: $(SYSLINUX_FILES)
+$(ROOT)/isolinux/isolinux.cfg: syslinux.cfg
+	sudo cp $< $@
 $(ROOT)/isolinux/%: /usr/lib/ISOLINUX/%
 	sudo cp $< $@
 $(ROOT)/isolinux/%: /usr/lib/syslinux/modules/bios/%
