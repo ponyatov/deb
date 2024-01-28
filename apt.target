@@ -1,2 +1,4 @@
 git,make,curl
 mc,vim
+iproute2,wpasupplicant
+xserver-xorg-video-intel,xserver-xorg-video-nouveau,xterm,xinit,i3
