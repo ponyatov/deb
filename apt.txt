@@ -2,6 +2,6 @@ git make curl
 code meld doxygen clang-format
 g++ build-essential
 libncurses-dev nasm
-mmdebstrap squid
+mmdebstrap squid apache2-utils
 xorriso isolinux syslinux extlinux dosfstools
 qemu-system-x86

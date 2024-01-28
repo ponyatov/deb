@@ -101,6 +101,7 @@ $(HOME)/distr/SDK/dmd_$(D_VER)_amd64.deb:
 MM_SUITE  = bookworm
 MM_TARGET = $(ROOT)
 MM_ARCH   = i386
+MM_KERNEL = 686
 MM_OPTS  += --architectures=$(MM_ARCH)
 # MM_MIRROR = /etc/apt/sources.list
 MM_MIRROR = http://mirror.mephi.ru/debian/
@@ -114,12 +115,12 @@ MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
 # MM_OPTS  += --customize-hook='sync-out /var/cache/apt/archives ./cache/archives'
 # MM_OPTS  += --customize-hook='sync-out /var/lib/apt/lists      ./cache/lists'
 # MM_OPTS  += --customize-hook='sync-out /root                   ./cache/root'
-MM_OPTS  += --variant=minbase
+MM_OPTS  += --variant=custom
 # minbase
 # custom
 # extract
-MM_OPTS  += --include=`cat apt.target | tr [:space:] ,`linux-image-$(MM_ARCH)
-
+MM_OPTS  += --include=`cat apt.target | tr [:space:] ,`linux-image-$(MM_KERNEL)
+MM_OPTS  += --aptopt=etc/apt/apt.conf.d/99proxy
 # MM_OPTS  += --dpkgopt='path-exclude=/usr/share/{doc,info,man,locale}/*'
 
 .PHONY: root
@@ -150,7 +151,7 @@ $(FW)/$(MODULE).iso: $(SYSLINUX_FILES)
 
 .PHONY: qemu
 qemu:
-	qemu-system-x86_64 -m 512m -cdrom $(FW)/$(MODULE).iso -boot d
+	qemu-system-i386 -m 512m -cdrom $(FW)/$(MODULE).iso -boot d
 
 .PHONY: usb
 USB=null
@@ -174,13 +175,23 @@ usb:
 .PHONY: squid proxy
 # https://orcacore.com/install-squid-proxy-debian-11/
 proxy: squid
-squid: $(CWD)/etc/squid/squid.conf
+SQUID_FILES  = /etc/apt/apt.conf.d/99proxy
+squid: $(CWD)/etc/squid/squid.conf $(SQUID_FILES)
 	echo > cache/access.log
 	echo > cache/cache.log
-	sudo systemctl stop squid
-	rm cache/*.log
-	/usr/sbin/squid -N -d 7 -f $<
+# sudo systemctl stop squid
+	/usr/sbin/squid -N -d 7 -f $< $(SQUID_Z)
 
+/etc/%: etc/%
+	cat $< | sudo tee -a $@
+
+.PHONY: aptest
+aptest:
+	https_proxy=http://deb:passw@localhost:13128/ \
+	http_proxy=http://deb:passw@localhost:13128/ \
+	ftp_proxy=http://deb:passw@localhost:13128/ \
+	sudo apt update
+	
 # merge
 
 .PHONY: release
