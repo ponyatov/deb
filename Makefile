@@ -86,6 +86,7 @@ doc/Programming_in_D.pdf:
 .PHONY: install update gz
 install: doc gz
 	$(MAKE) update
+	sudo systemctl disable squid
 	dub build dfmt
 update:
 	sudo apt update
@@ -171,10 +172,14 @@ usb:
 	qemu-system-x86_64 -m 1G -hdc /dev/$(USB) -boot c
 
 .PHONY: squid proxy
+# https://orcacore.com/install-squid-proxy-debian-11/
 proxy: squid
 squid: $(CWD)/etc/squid/squid.conf
+	echo > cache/access.log
+	echo > cache/cache.log
 	sudo systemctl stop squid
-	/usr/sbin/squid -d 7 -f $<
+	rm cache/*.log
+	/usr/sbin/squid -N -d 7 -f $<
 
 # merge
 
