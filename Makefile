@@ -103,8 +103,8 @@ MM_TARGET = $(ROOT)
 MM_ARCH   = i386
 MM_KERNEL = 686
 MM_OPTS  += --architectures=$(MM_ARCH)
-# MM_MIRROR = /etc/apt/sources.list
-MM_MIRROR = http://mirror.mephi.ru/debian/
+MM_MIRROR = etc/apt/sources.list
+# MM_MIRROR = http://mirror.mephi.ru/debian/
 MM_OPTS  += --setup-hook='mkdir     -p "$$1"'
 MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
 # MM_OPTS  += --customize-hook='git checkout "$$1"'
@@ -115,7 +115,7 @@ MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
 # MM_OPTS  += --customize-hook='sync-out /var/cache/apt/archives ./cache/archives'
 # MM_OPTS  += --customize-hook='sync-out /var/lib/apt/lists      ./cache/lists'
 # MM_OPTS  += --customize-hook='sync-out /root                   ./cache/root'
-MM_OPTS  += --variant=custom
+MM_OPTS  += --variant=minbase
 # minbase
 # custom
 # extract
