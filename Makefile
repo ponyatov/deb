@@ -166,8 +166,6 @@ usb:
 # syslinux -i /dev/$(USB)1
 # mcopy -i /dev/$(USB)1 -o syslinux.cfg ::
 # mcopy -i /dev/$(USB)1 -o $(ROOT)/boot ::
-# mcopy -i /dev/$(USB)1 -o $(ROOT)/boot/vmlinuz-* ::
-# mcopy -i /dev/$(USB)1 -o $(ROOT)/boot/initrd.img-* ::
 	mdir  -i /dev/$(USB)1
 # 
 	sudo mkfs.ext3 -v /dev/$(USB)2 -L B00bCafe -d $(ROOT)
