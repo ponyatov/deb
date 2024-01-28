@@ -1,3 +1,4 @@
 # https://wiki.it-kb.ru/unix-linux/advanced-packaging-tool/how-to-install-packages-updates-apt-over-proxy-in-debian-unbuntu
 
-Acquire::http::Proxy "http://deb:passwd@localhost:13128";
+Acquire::http::Proxy "http://localhost:3128";
+# Acquire::http::Proxy "http://deb:passwd@localhost:13128";
