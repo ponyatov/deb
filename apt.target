@@ -1,4 +1,4 @@
 git,make,curl
 mc,vim
 iproute2,wpasupplicant
-xserver-xorg-video-intel,xserver-xorg-video-nouveau,xterm,xinit,i3
+xserver-xorg-video-intel,xserver-xorg-video-vesa,xterm,xinit,i3
