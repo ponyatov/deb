@@ -108,7 +108,6 @@ MM_MIRROR = etc/apt/sources.list
 MM_OPTS  += --setup-hook='mkdir     -p "$$1"'
 MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
 MM_OPTS  += --customize-hook='git checkout "$$1"'
-MM_OPTS  += --customize-hook='sync-in etc/fstab /etc/fstab'
 MM_OPTS  += --customize-hook='sync-in etc/network /etc/network'
 MM_OPTS  += --customize-hook='sync-in etc/wpa_supplicant /etc/wpa_supplicant'
 MM_OPTS  += --customize-hook='apt update && apt upgrade -y'

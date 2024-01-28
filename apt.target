@@ -2,3 +2,4 @@ systemd,ifupdown,iproute2,wpasupplicant
 git,make,curl
 mc,vim
 xserver-xorg-video-intel,xserver-xorg-video-vesa,xterm,xinit,i3
+firmware-atheros,firmware-linux-free,firmware-misc-nonfree
