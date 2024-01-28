@@ -107,7 +107,7 @@ MM_MIRROR = etc/apt/sources.list
 # MM_MIRROR = http://mirror.mephi.ru/debian/
 MM_OPTS  += --setup-hook='mkdir     -p "$$1"'
 MM_OPTS  += --setup-hook='git checkout "$$1"/.gitignore'
-# MM_OPTS  += --customize-hook='git checkout "$$1"'
+MM_OPTS  += --customize-hook='git checkout "$$1"'
 # MM_OPTS  += --skip=update --skip=essential/unlink
 # MM_OPTS  += --setup-hook='sync-in  ./cache/archives /var/cache/apt/archives'
 # MM_OPTS  += --setup-hook='sync-in  ./cache/lists    /var/lib/apt/lists'
