@@ -1,0 +1,7 @@
+git make curl
+code meld doxygen clang-format
+g++ build-essential
+libncurses-dev nasm
+mmdebstrap squid apache2-utils live-build
+xorriso isolinux syslinux extlinux dosfstools
+qemu-system-x86
