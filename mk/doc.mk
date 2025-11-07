@@ -1,0 +1,2 @@
+.PHONY: doc
+doc: sync
